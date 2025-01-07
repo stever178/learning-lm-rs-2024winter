@@ -121,7 +121,7 @@ pub fn swiglu(y: &mut Tensor<f32>, x: &Tensor<f32>) {
 // hint: You don't need to do an explicit transpose of B
 pub fn matmul_transb(c: &mut Tensor<f32>, beta: f32, a: &Tensor<f32>, b: &Tensor<f32>, alpha: f32) {
     // todo!("实现 matmul_transb，计算前做一些必要的检查会帮助你后续调试");
-    assert!(a.shape() == b.shape());
+    assert!(a.shape()[a.shape().len() - 1] == b.shape()[b.shape().len() - 1]);
 
     let input_shape = a.shape();
     let c_shape = c.shape().clone();

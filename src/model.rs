@@ -103,8 +103,31 @@ impl Llama<f32> {
 
             todo!("self_attention(...)");
             todo!("down_proj matmul and add residual");
+            // self_attention(
+            //     &mut hidden_states,
+            //     &mut att_scores,
+            //     &q,
+            //     &k,
+            //     &v,
+            //     self.n_kv_h,
+            //     n_groups,
+            //     seq_len,
+            //     total_seq_len,
+            //     dqkv,
+            // );
 
-            todo!("mlp(...)");
+            // todo!("mlp(...)");
+            mlp(
+                &mut residual,
+                &mut hidden_states,
+                &mut gate_buf,
+                &mut up_buf,
+                &self.params.w_up[layer],
+                &self.params.w_down[layer],
+                &self.params.w_gate[layer],
+                &self.params.rms_ffn_w[layer],
+                self.eps,
+            );
         }
 
         // No matter what seq_len, the output is always a 1D vector of length vocab,
@@ -154,6 +177,9 @@ fn self_attention(
     dqkv: usize,
 ) {
     todo!("Implement self_attention");
+    // assert!(residual_shape == hidden_states_shape);
+
+    OP::matmul_transb(att_scores, 0., q, k, 1.0);
 }
 
 fn mlp(
@@ -167,7 +193,18 @@ fn mlp(
     rms_w: &Tensor<f32>,
     eps: f32,
 ) {
-    todo!("Implement mlp");
+    // todo!("Implement mlp");
+    let residual_shape = residual.shape().clone();
+    let hidden_states_shape = hidden_states.shape().clone();
+    assert!(residual_shape == hidden_states_shape);
+
+    OP::rms_norm(hidden_states, residual, &rms_w, eps);
+    OP::matmul_transb(gate, 0., hidden_states, w_gate, 1.0);
+    OP::matmul_transb(up, 0., hidden_states, w_up, 1.0);
+
+    let mut act = Tensor::<f32>::new(up.data().to_vec(), up.shape());
+    OP::swiglu(&mut act, gate);
+    OP::matmul_transb(residual, 1., &mut act, w_down, 1.0);
 }
 
 #[test]
