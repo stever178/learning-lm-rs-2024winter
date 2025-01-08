@@ -180,6 +180,7 @@ fn self_attention(
     // assert!(residual_shape == hidden_states_shape);
 
     OP::matmul_transb(att_scores, 0., q, k, 1.0);
+
 }
 
 fn mlp(

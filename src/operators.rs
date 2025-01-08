@@ -140,7 +140,6 @@ pub fn matmul_transb(c: &mut Tensor<f32>, beta: f32, a: &Tensor<f32>, b: &Tensor
             }
         }
     }
-
 }
 
 // Dot product of two tensors (treated as vectors)
